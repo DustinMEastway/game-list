@@ -1,6 +1,16 @@
 const express = require('express');
+const { readFile } = require('fs').promises;
 const app = express();
 const port = 3000;
+const environment = {
+  fileDirectory: __dirname + '/../data'
+}
+
+async function sendFile(response, fileName) {
+  response.send(
+    (await readFile(fileName)).toString()
+  );
+}
 
 app.use((request, response, next) => {
   response.header('Access-Control-Allow-Origin', '*');
@@ -8,24 +18,13 @@ app.use((request, response, next) => {
   next();
 });
 
-app.get('/played-games', (req, res) => {
-  res.json([
-    'Cyberpunk 20177',
-    'Slay the Spire',
-    'Kingdom: Two Crowns',
-    'Flat Heroes',
-    'Final Fantasy 14'
-  ]);
+
+app.get('/played-games', (_, response) => {
+  sendFile(response, `${environment.fileDirectory}/played-games.json`)
 });
 
-app.get('/unplayed-games', (req, res) => {
-  res.json([
-    'Ratchet & Clank: Rift Apart',
-    'Horizon Forbidden West',
-    'Harry Potter Legacy',
-    'Castle Crashers',
-    'It Takes Two'
-  ]);
+app.get('/unplayed-games', (_, response) => {
+  sendFile(response, `${environment.fileDirectory}/unplayed-games.json`)
 });
 
 app.listen(port, () => {
