@@ -1,15 +1,13 @@
 const express = require('express');
-const { readFile } = require('fs').promises;
+const fs = require('fs').promises;
 const app = express();
 const port = 3000;
 const environment = {
-  fileDirectory: __dirname + '/../data'
+  fileDirectory: `${__dirname}/../data`
 }
 
-async function sendFile(response, fileName) {
-  response.send(
-    (await readFile(fileName)).toString()
-  );
+async function getLocalFile(fileName) {
+  return (await fs.readFile(`${environment.fileDirectory}/${fileName}`)).toString();
 }
 
 app.use((request, response, next) => {
@@ -18,13 +16,27 @@ app.use((request, response, next) => {
   next();
 });
 
+app.use(express.json());
 
-app.get('/played-games', (_, response) => {
-  sendFile(response, `${environment.fileDirectory}/played-games.json`)
+app.use(express.text());
+
+app.post('/add-played-game', async (request, response) => {
+  const game = request.body.trim();
+  console.log(request.body);
+  response.send(`${game} back-end response`);
 });
 
-app.get('/unplayed-games', (_, response) => {
-  sendFile(response, `${environment.fileDirectory}/unplayed-games.json`)
+app.post('/add-unplayed-game', async (request, response) => {
+  const game = request.body.trim();
+  response.send(`${game} back-end response`);
+});
+
+app.get('/played-games', async (_, response) => {
+  response.send(await getLocalFile('played-games.json'));
+});
+
+app.get('/unplayed-games', async (_, response) => {
+  response.send(await getLocalFile('unplayed-games.json'));
 });
 
 app.listen(port, () => {
