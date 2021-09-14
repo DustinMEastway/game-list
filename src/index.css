@@ -5,3 +5,9 @@
 .list {
   border: 1px solid #000;
 }
+
+.list button {
+  background-color: transparent;
+  border: 1px solid black;
+  border-radius: 50%;
+}

@@ -4,34 +4,38 @@ const environment = {
   }
 };
 
-function addListItems(listElement, items) {
-  items.forEach((item) => {
-    addListItem(listElement, item);
+function addListItems(listElement, listName, items) {
+  items.forEach((item, index) => {
+    addListItem(listElement, item, async () => {
+      const games = await json(sendLocalRequest(`remove-${listName}-game`, { body: index, method: 'DELETE' }));
+      setListItems(listElement, listName, games);
+    });
   });
 }
 
-function addListItem(listElement, item) {
+function addListItem(listElement, item, deleteMethod) {
   const listItem = document.createElement('li');
-  listItem.innerText = item;
+  listItem.appendChild(document.createTextNode(item));
+
+  const removeItemButton = document.createElement('button');
+  removeItemButton.innerText = '-';
+  removeItemButton.addEventListener('click', deleteMethod);
+  listItem.appendChild(removeItemButton);
+
   listElement.appendChild(listItem);
 }
 
-function getLocalJson(api) {
-  return json(fetch(`${environment.urls.api}/${api}`));
-}
-
-function setListItems(listElement, items) {
+function setListItems(listElement, listName, items) {
   listElement.innerHTML = '';
-  addListItems(listElement, items);
+  addListItems(listElement, listName, items);
 }
 
-function postLocalText(url, body) {
-  return fetch(`${environment.urls.api}/${url}`, {
-    body,
+function sendLocalRequest(api, args) {
+  return fetch(`${environment.urls.api}/${api}`, {
     headers: {
       'Content-Type': 'text/plain'
     },
-    method: 'POST'
+    ...args
   });
 }
 
@@ -39,21 +43,21 @@ async function json(response) {
   return (await response).json();
 }
 
-async function onAddGameClick(name) {
+async function onAddGameClick(listName) {
   const game = prompt('Enter Game');
-  const games = await json(postLocalText(`add-${name}-game`, game));
-  const list = document.getElementById(`${name}-list`);
-  setListItems(list, games);
+  const games = await json(sendLocalRequest(`add-${listName}-game`, { body: game, method: 'POST' }));
+  const list = document.getElementById(`${listName}-list`);
+  setListItems(list, listName, games);
 }
 
 async function updateLists() {
   const playedGameList = document.getElementById('played-list');
   const unplayedGameList = document.getElementById('unplayed-list');
 
-  const gamePromises = [ 'played-games', 'unplayed-games' ].map((route) => getLocalJson(route));
+  const gamePromises = [ 'played-games', 'unplayed-games' ].map((route) => json(sendLocalRequest(route)));
   const [ playedGames, unplayedGames ] = await Promise.all(gamePromises);
-  setListItems(playedGameList, playedGames);
-  setListItems(unplayedGameList, unplayedGames);
+  setListItems(playedGameList, 'played', playedGames);
+  setListItems(unplayedGameList, 'unplayed', unplayedGames);
 }
 
 async function main() {
