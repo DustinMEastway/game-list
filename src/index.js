@@ -20,6 +20,11 @@ function getLocalJson(api) {
   return json(fetch(`${environment.urls.api}/${api}`));
 }
 
+function setListItems(listElement, items) {
+  listElement.innerHTML = '';
+  addListItems(listElement, items);
+}
+
 function postLocalText(url, body) {
   return fetch(`${environment.urls.api}/${url}`, {
     body,
@@ -36,8 +41,9 @@ async function json(response) {
 
 async function onAddGameClick(name) {
   const game = prompt('Enter Game');
-  const newGame = await postLocalText(`add-${name}-game`, game);
-  console.log(await newGame.text());
+  const games = await json(postLocalText(`add-${name}-game`, game));
+  const list = document.getElementById(`${name}-list`);
+  setListItems(list, games);
 }
 
 async function updateLists() {
@@ -46,10 +52,8 @@ async function updateLists() {
 
   const gamePromises = [ 'played-games', 'unplayed-games' ].map((route) => getLocalJson(route));
   const [ playedGames, unplayedGames ] = await Promise.all(gamePromises);
-  playedGameList.innerHTML = '';
-  addListItems(playedGameList, playedGames);
-  unplayedGameList.innerHTML = '';
-  addListItems(unplayedGameList, unplayedGames);
+  setListItems(playedGameList, playedGames);
+  setListItems(unplayedGameList, unplayedGames);
 }
 
 async function main() {
