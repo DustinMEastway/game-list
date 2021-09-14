@@ -6,10 +6,14 @@ const environment = {
 
 function addListItems(listElement, listName, items) {
   items.forEach((item, index) => {
-    addListItem(listElement, item, async () => {
-      const games = await json(sendLocalRequest(`remove-${listName}-game`, { body: index, method: 'DELETE' }));
-      setListItems(listElement, listName, games);
-    });
+    const deleteMethod = async () => {
+      if (confirm(`Are you sure you want to remove ${item}?`)) {
+        const games = await json(sendLocalRequest(`remove-${listName}-game`, { body: index, method: 'DELETE' }));
+        setListItems(listElement, listName, games);
+      }
+    };
+
+    addListItem(listElement, item, deleteMethod);
   });
 }
 
