@@ -1,10 +1,12 @@
 const express = require('express');
 const fs = require('fs').promises;
-const app = express();
-const port = 3000;
+
 const environment = {
-  fileDirectory: `${__dirname}/../data`
+  fileDirectory: `${__dirname}/../data`,
+  port: 3000
 }
+
+const app = express();
 
 async function getLocalTextFile(fileName) {
   return (await fs.readFile(`${environment.fileDirectory}/${fileName}`)).toString();
@@ -44,7 +46,7 @@ app.use((request, response, next) => {
   next();
 });
 
-app.use(express.text());
+app.use(express.json());
 
 app.use(express.text());
 
@@ -72,6 +74,6 @@ app.get('/unplayed-games', async (_, response) => {
   response.send(await getLocalTextFile('unplayed-games.json'));
 });
 
-app.listen(port, () => {
-  console.log(`App listening at http://localhost:${port}`);
+app.listen(environment.port, () => {
+  console.log(`App listening at http://localhost:${environment.port}`);
 });
