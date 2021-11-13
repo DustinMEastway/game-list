@@ -1,0 +1,25 @@
+[
+    {
+        "id": "0",
+        "items": [
+            "Cyberpunk 2077",
+            "Slay the Spire",
+            "Kingdom: Two Crowns",
+            "Flat Heroes",
+            "Final Fantasy 14",
+            "Ratchet & Clank: Up Your Arsenal"
+        ],
+        "name": "Played Games"
+    },
+    {
+        "id": "1",
+        "items": [
+            "Ratchet & Clank: Rift Apart",
+            "Horizon Forbidden West",
+            "Harry Potter Legacy",
+            "Castle Crashers",
+            "It Takes Two"
+        ],
+        "name": "Unplayed Games"
+    }
+]

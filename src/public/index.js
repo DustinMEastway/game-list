@@ -4,8 +4,8 @@ const environment = {
   }
 };
 
-function addListItems(listElement, listName, items) {
-  items.forEach((item, index) => {
+function addListItems(listElement, listName, gameList) {
+  gameList.items.forEach((item, index) => {
     const deleteMethod = async () => {
       if (confirm(`Are you sure you want to remove ${item}?`)) {
         const games = await json(sendLocalRequest(`remove-${listName}-game`, { body: index, method: 'DELETE' }));
@@ -29,9 +29,9 @@ function addListItem(listElement, item, deleteMethod) {
   listElement.appendChild(listItem);
 }
 
-function setListItems(listElement, listName, items) {
+function setListItems(listElement, listName, gameList) {
   listElement.innerHTML = '';
-  addListItems(listElement, listName, items);
+  addListItems(listElement, listName, gameList);
 }
 
 function sendLocalRequest(api, args) {

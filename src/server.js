@@ -6,6 +6,8 @@ const environment = {
   port: 3000
 }
 
+const gameListsFileName = 'game-lists.json';
+
 const app = express();
 
 async function getLocalTextFile(fileName) {
@@ -16,27 +18,31 @@ function writeLocalFile(fileName, content) {
   return fs.writeFile(`${environment.fileDirectory}/${fileName}`, content);
 }
 
-async function addGameToCollection(fileName, game, response) {
+async function addGameToList(listId, game, response) {
   game = typeof game === 'string' && game.trim();
-  const file = await getLocalTextFile(fileName);
-  if (!game) {
-    response.send(file);
-  } else {
-    const gameCollection = JSON.parse(file);
-    gameCollection.push(game);
-    await writeLocalFile(fileName, JSON.stringify(gameCollection));
-    response.json(gameCollection);
+  const lists = JSON.parse(await getLocalTextFile(gameListsFileName));
+  const gameList = lists.find((list) => list.id === listId);
+  if (game) {
+    gameList.items.push(game);
+    await writeLocalFile(gameListsFileName, JSON.stringify(lists));
   }
+  response.json(gameList);
 }
 
-async function removeGameFromCollection(fileName, index, response) {
+async function getGameList(listId, response) {
+  const lists = JSON.parse(await getLocalTextFile(gameListsFileName));
+  return lists.find((list) => list.id === listId);
+}
+
+async function removeGameFromList(listId, index, response) {
   index = (typeof index === 'number') ? index : parseInt(index);
-  let gameCollection = JSON.parse(await getLocalTextFile(fileName));
-  if (index >= 0 && index < gameCollection.length) {
-    gameCollection = gameCollection.slice(0, index).concat(gameCollection.slice(index + 1));
-    await writeLocalFile(fileName, JSON.stringify(gameCollection));
+  const lists = JSON.parse(await getLocalTextFile(gameListsFileName));
+  const gameList = lists.find((list) => list.id === listId);
+  if (index >= 0 && index < gameList.items.length) {
+    gameList.items.splice(index, 1);
+    await writeLocalFile(gameListsFileName, JSON.stringify(lists));
   }
-  response.json(gameCollection);
+  response.json(gameList);
 }
 
 app.use((request, response, next) => {
@@ -53,27 +59,27 @@ app.use(express.text());
 app.use(express.static('./src/public'))
 
 app.post('/add-played-game', async (request, response) => {
-  addGameToCollection('played-games.json', request.body, response);
+  addGameToList('0', request.body, response);
 });
 
 app.post('/add-unplayed-game', async (request, response) => {
-  addGameToCollection('unplayed-games.json', request.body, response);
+  addGameToList('1', request.body, response);
 });
 
 app.get('/played-games', async (_, response) => {
-  response.send(await getLocalTextFile('played-games.json'));
+  response.send(await getGameList('0'));
 });
 
 app.delete('/remove-played-game', async (request, response) => {
-  removeGameFromCollection('played-games.json', request.body, response);
+  removeGameFromList('0', request.body, response);
 });
 
 app.delete('/remove-unplayed-game', async (request, response) => {
-  removeGameFromCollection('unplayed-games.json', request.body, response);
+  removeGameFromList('1', request.body, response);
 });
 
 app.get('/unplayed-games', async (_, response) => {
-  response.send(await getLocalTextFile('unplayed-games.json'));
+  response.send(await getGameList('1'));
 });
 
 app.listen(environment.port, () => {
