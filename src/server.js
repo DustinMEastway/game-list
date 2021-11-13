@@ -50,6 +50,8 @@ app.use(express.json());
 
 app.use(express.text());
 
+app.use(express.static('./src/public'))
+
 app.post('/add-played-game', async (request, response) => {
   addGameToCollection('played-games.json', request.body, response);
 });
